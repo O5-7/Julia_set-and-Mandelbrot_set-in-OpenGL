@@ -42,10 +42,13 @@
     <None Include="assimp-vc142-mtd.dll">
       <Filter>源文件</Filter>
     </None>
-    <None Include="shader.frag">
+    <None Include="shader_set.frag">
       <Filter>源文件</Filter>
     </None>
     <None Include="shader.vert">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="shader_fun.frag">
       <Filter>源文件</Filter>
     </None>
   </ItemGroup>

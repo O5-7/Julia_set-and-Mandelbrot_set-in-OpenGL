@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <chrono>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -8,22 +9,30 @@
 
 #include "Shader.h"
 
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 unsigned int SCR_WIDTH = 1000;
 unsigned int SCR_HEIGHT = 1000;
+double X_center = 0;
+double Y_center = 0;
+double Scale = 0;
+double frame_d = 0;
 
 
 int main() {
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "complex", NULL, NULL);
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetScrollCallback(window, scroll_callback);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
     float vertices[] = {
@@ -53,8 +62,13 @@ int main() {
 
     glEnableVertexAttribArray(0);
 
-    Shader ourShader("shader.vert", "shader.frag");
+    Shader ourShader("shader.vert", "shader_set.frag");
+    ourShader.use();
+    ourShader.setFloat("PI", 3.1415926);
 
+    float time_start = glfwGetTime();
+
+    auto time_last = std::chrono::high_resolution_clock::now();
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -62,7 +76,17 @@ int main() {
         ourShader.use();
         ourShader.setInt("SCR_WIDTH", SCR_WIDTH);
         ourShader.setInt("SCR_HEIGHT", SCR_HEIGHT);
-        ourShader.setVec2("c", glm::vec2(0.3, 0.7));
+        float time_now = glfwGetTime() * 0.1;
+
+        long time_s = (std::chrono::high_resolution_clock::now() - time_last).count();
+        time_last = std::chrono::high_resolution_clock::now();
+        frame_d = (double)(time_s) / 1000000000;
+        std::cout << 1000000000.0 / (double)(time_s) << std::endl;
+
+        ourShader.setVec2("c", glm::vec2(sin(time_now), cos(time_now)));
+        ourShader.setVec2("Center", glm::vec2(X_center, Y_center));
+        ourShader.setFloat("Scale", powf(1.1, Scale));
+        ourShader.setFloat("time", glfwGetTime()-time_start);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -86,4 +110,19 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        Y_center += powf(1.1, Scale) * frame_d;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        Y_center -= powf(1.1, Scale) * frame_d;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        X_center -= powf(1.1, Scale) * frame_d;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        X_center += powf(1.1, Scale) * frame_d;
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    Scale -= static_cast<float>(yoffset);
+    if (Scale > 20) Scale = 20;
+    if (Scale < -300) Scale = -300;
 }

@@ -22,6 +22,8 @@ double Scale = 0;
 double frame_d = 0;
 float loop_time = 100;
 float Gamma = 1.0;
+int Show_loop = 0;
+int Ctrl = 0;
 
 
 int main() {
@@ -37,11 +39,11 @@ int main() {
     glfwSetScrollCallback(window, scroll_callback);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
-    float vertices[] = {
-    1.0f, 1.0f, 0.0f,   // 右上角
-    1.0f, -1.0f, 0.0f,  // 右下角
-    -1.0f, -1.0f, 0.0f, // 左下角
-    -1.0f, 1.0f, 0.0f   // 左上角
+    double vertices[] = {
+    1.0, 1.0, 0.0,   // 右上角
+    1.0, -1.0, 0.0,  // 右下角
+    -1.0, -1.0, 0.0, // 左下角
+    -1.0, 1.0, 0.0   // 左上角
     };
 
     unsigned int indices[] = { // 注意索引从0开始! 
@@ -60,11 +62,11 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(double), (void*)0);
 
     glEnableVertexAttribArray(0);
 
-    Shader ourShader("shader.vert", "shader_set.frag");
+    Shader ourShader("shader.vert", "shader_set_2.frag");
     ourShader.use();
     ourShader.setFloat("PI", 3.1415926);
 
@@ -86,11 +88,15 @@ int main() {
         std::cout << 1000000000.0 / (double)(time_s) << std::endl;
 
         ourShader.setVec2("c", glm::vec2(sin(time_now), cos(time_now)));
-        ourShader.setVec2("Center", glm::vec2(X_center, Y_center));
-        ourShader.setFloat("Scale", powf(1.1, Scale));
+        // ourShader.setVec2("Center", glm::vec2(X_center, Y_center));
+        ourShader.setDouble("Center_x", X_center);
+        ourShader.setDouble("Center_y", Y_center);
+        ourShader.setDouble("Scale", powf(1.1, Scale));
         ourShader.setFloat("time_len", glfwGetTime()-time_start);
         ourShader.setInt("loop_time", floor(loop_time));
         ourShader.setFloat("Gamma", Gamma);
+        ourShader.setInt("Show_loop", Show_loop);
+        ourShader.setInt("Ctrl", Ctrl);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -136,6 +142,7 @@ void processInput(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
         loop_time = 100;
+        Scale = -10;
     }
 
     // QE控制Gamma
@@ -147,11 +154,23 @@ void processInput(GLFWwindow* window)
         Gamma += 0.7 * frame_d;
         if (Gamma > 2.3) Gamma = 2.3;
     }
+
+    // loop终止检测
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+        Show_loop = 1;
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE)
+        Show_loop = 0;
+
+    // ctrl
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        Ctrl = 1;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
+        Ctrl = 0;
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     Scale -= static_cast<float>(yoffset);
     if (Scale > 20) Scale = 20;
-    if (Scale < -300) Scale = -300;
+    if (Scale < -500) Scale = -500;
 }

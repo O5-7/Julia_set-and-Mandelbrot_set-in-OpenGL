@@ -92,7 +92,7 @@ public:
     }
     void setDouble(const std::string& name, double value) const
     {
-        glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+        glUniform1d(glGetUniformLocation(ID, name.c_str()), value);
     }
     void setVec2(const std::string& name, const glm::vec2& value) const
     {

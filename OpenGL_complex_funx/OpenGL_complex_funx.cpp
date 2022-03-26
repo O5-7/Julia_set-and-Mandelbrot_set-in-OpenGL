@@ -20,6 +20,8 @@ double X_center = 0;
 double Y_center = 0;
 double Scale = 0;
 double frame_d = 0;
+float loop_time = 100;
+float Gamma = 1.0;
 
 
 int main() {
@@ -86,7 +88,9 @@ int main() {
         ourShader.setVec2("c", glm::vec2(sin(time_now), cos(time_now)));
         ourShader.setVec2("Center", glm::vec2(X_center, Y_center));
         ourShader.setFloat("Scale", powf(1.1, Scale));
-        ourShader.setFloat("time", glfwGetTime()-time_start);
+        ourShader.setFloat("time_len", glfwGetTime()-time_start);
+        ourShader.setInt("loop_time", floor(loop_time));
+        ourShader.setFloat("Gamma", Gamma);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -107,9 +111,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void processInput(GLFWwindow* window)
 {
+    // 窗口关闭
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    // WASD视角移动
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         Y_center += powf(1.1, Scale) * frame_d;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -118,6 +124,29 @@ void processInput(GLFWwindow* window)
         X_center -= powf(1.1, Scale) * frame_d;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         X_center += powf(1.1, Scale) * frame_d;
+
+    // -+ 循环次数
+    if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) {
+        loop_time -= 100 * frame_d;
+        if (loop_time < 1) loop_time = 1;
+    }
+    if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) {
+        loop_time += 100 * frame_d;
+        if (loop_time > 500) loop_time = 500;
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        loop_time = 100;
+    }
+
+    // QE控制Gamma
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        Gamma -= 0.7 * frame_d;
+        if (Gamma < 0.1) Gamma = 0.1;
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+        Gamma += 0.7 * frame_d;
+        if (Gamma > 2.3) Gamma = 2.3;
+    }
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)

@@ -4,10 +4,8 @@ uniform int SCR_WIDTH;
 uniform int SCR_HEIGHT;
 uniform vec2 Center;
 uniform float Scale;
-uniform float time_len;
+uniform float time;
 uniform vec2 c;
-uniform int loop_time;
-uniform float Gamma;
 
 void main()
 {   
@@ -23,7 +21,7 @@ void main()
 
     float time = 0;
     
-    while (time < loop_time){
+    while (time < 255){
         double next_x = pow(float(x), 2) - pow(float(y), 2) + org_pos.x;
         double next_y = 2 * x * y + org_pos.y;
 
@@ -35,8 +33,7 @@ void main()
         time += 1;
     }
 
-    float color_out = float(time) / loop_time;
-    color_out = pow(color_out, Gamma);
+    float color_out = time / 255;
     FragColor = vec4(vec3(color_out), 1.0f);
     // if (length(org_pos - c) < 0.05)FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
     
